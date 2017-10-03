@@ -1,13 +1,13 @@
 puts 'Введите длину для каждой из сторон треугольника'
 
 puts 'Первая сторона треугольника:'
-a = gets.chomp.to_i
+a = gets.chomp.to_f
 
 puts 'Вторая сторона треугольника:'
-b = gets.chomp.to_i
+b = gets.chomp.to_f
 
 puts 'Третья сторона треугольника:'
-c = gets.chomp.to_i
+c = gets.chomp.to_f
 
 if a > b && a > c
   first_cathetus = b
