@@ -3,8 +3,7 @@ alphabet = ('a'..'z').to_a
 
 result = {}
 
-alphabet.each_index do |index|
-  letter = alphabet[index]
+alphabet.each_with_index do |letter, index|
   result[letter] = index + 1 if vowels.include?(letter)
 end
 
