@@ -1,21 +1,17 @@
 class Route
+  attr_reader :stations
+
   def initialize(start_station, end_station)
-    @start_station = start_station
-    @end_station = end_station
-    @transional_stations = []
+    @stations = []
+    @stations.unshift(start_station)
+    @stations.push(end_station)
   end
 
   def add_transitional_station(station)
-    @transional_stations << station
+    @stations.insert(@stations.length - 2, station)
   end
 
   def remove_transitional_station(station)
     @transional_stations.delete(station)
-  end
-
-  def print_route
-    puts @start_station
-    @transional_stations.each { |station| puts station.name }
-    puts @end_station
   end
 end

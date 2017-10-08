@@ -1,21 +1,21 @@
 class Station
+  attr_reader :trains
+
   def initialize(name)
     @name = name
+    @trains = []
   end
 
-  def recieve_train(train)
-    @trains[train.number] = train
+  def recieve(train)
+    @trains << train
   end
 
-  def send_train(train_number)
-    @trains.delete(train_number)
+  def send(train)
+    @trains.delete(train)
   end
 
-  def train_list
-    @trains
-  end
-
-  def typed_train_list
-    @trains.reduce(Hash.new(0)) { |list, train| list[train.type] += 1 }
+  def typed_train_list(type)
+    amount = 0
+    @trains.reduce(amount) { |acc, train| train.type == type ? acc += 1 : acc }
   end
 end
