@@ -22,7 +22,7 @@ class Train
   end
 
   def detach_railcar
-    @railcar_amount -= 1 if @speed.zero?
+    @railcar_amount -= 1 if @speed.zero? && @railcar_amount > 0
   end
 
   def route=(route)
@@ -30,12 +30,24 @@ class Train
     @station_number = 0
   end
 
-  def head_to_the_next_station
+  def move_forward
+    if @station_number == @route.stations.length
+      return
+    end
+
+    @route.stations[@station_number].send(self)
     @station_number += 1
+    @route.stations[@station_number].receive(self)
   end
 
-  def head_to_the_previous_station
+  def move_bacward
+    if @station_number == @route.stations.length || @station_number.zero?
+      return
+    end
+
+    @route.stations[@station_number].send(self)
     @station_number -= 1
+    @route.stations[@station_number].receive(self)
   end
 
   def current_station
