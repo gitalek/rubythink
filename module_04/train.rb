@@ -31,23 +31,19 @@ class Train
   end
 
   def move_forward
-    if @station_number == @route.stations.length
-      return
-    end
+    return if @station_number == @route.stations.length
 
-    @route.stations[@station_number].send(self)
+    current_station.send(self)
+    next_station.receive(self)
     @station_number += 1
-    @route.stations[@station_number].receive(self)
   end
 
   def move_bacward
-    if @station_number == @route.stations.length || @station_number.zero?
-      return
-    end
+    return if @station_number == @route.stations.length || @station_number.zero?
 
-    @route.stations[@station_number].send(self)
+    current_station.send(self)
+    next_station.receive(self)
     @station_number -= 1
-    @route.stations[@station_number].receive(self)
   end
 
   def current_station
