@@ -1,59 +1,69 @@
+# class documentation
 class Train
-  attr_reader :speed, :railcar_amount, :type
+  attr_reader :number, :speed, :railcars
 
-  def initialize(number, type, railcar_amount)
+  def initialize(number)
     @number = number
-    @type = type
-    @railcar_amount = railcar_amount
+    @railcars = []
 
     @speed = 0
   end
 
+  # interface method
   def speed_up
     @speed += 10
   end
 
+  # interface method
   def stop
     @speed = 0
   end
 
-  def attach_railcar
-    @railcar_amount += 1 if @speed.zero?
+  # interface method
+  def attach_railcar(railcar)
+    @railcars << railcar if @speed.zero?
   end
 
-  def detach_railcar
-    @railcar_amount -= 1 if @speed.zero? && @railcar_amount > 0
+  # interface method
+  def detach_railcar(railcar)
+    @railcars.delete(railcar) if @speed.zero? && !@railcars.zero?
   end
 
+  # interface method
   def route=(route)
     @route = route
     @station_number = 0
   end
 
+  # interface method
   def move_forward
     return if @station_number == @route.stations.length
 
     current_station.send(self)
-    next_station.receive(self)
+    next_station.recieve(self)
     @station_number += 1
   end
 
+  # interface method
   def move_bacward
     return if @station_number == @route.stations.length || @station_number.zero?
 
     current_station.send(self)
-    next_station.receive(self)
+    next_station.recieve(self)
     @station_number -= 1
   end
 
+  # interface method
   def current_station
-    @station_number[@station_number]
+    @route.stations[@station_number]
   end
 
+  # interface method
   def next_station
     @route.stations[@station_number + 1]
   end
 
+  # interface method
   def previous_station
     @route.stations[@station_number - 1]
   end
