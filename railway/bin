@@ -1,0 +1,7 @@
+#! /usr/bin/env ruby
+
+require_relative './main'
+
+control_station = Main.new
+
+control_station.run

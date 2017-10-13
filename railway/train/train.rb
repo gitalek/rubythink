@@ -21,7 +21,7 @@ class Train
 
   # interface method
   def attach_railcar(railcar)
-    @railcars << railcar if @speed.zero?
+    @railcars << railcar if @type == railcar.type && @speed.zero?
   end
 
   # interface method
