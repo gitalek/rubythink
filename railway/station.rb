@@ -5,6 +5,8 @@ class Station
   def initialize(name)
     @name = name
     @trains = []
+
+    @@stations << self
   end
 
   # interface method
@@ -21,5 +23,13 @@ class Station
   def typed_train_list(type)
     amount = 0
     @trains.reduce(amount) { |acc, train| train.type == type ? acc += 1 : acc }
+  end
+
+  # class varibles
+  @@stations = []
+
+  # class methods
+  def self.all
+    @@stations
   end
 end

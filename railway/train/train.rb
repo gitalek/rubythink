@@ -1,12 +1,18 @@
+require_relative('../modules/brand')
+require_relative('../modules/instance_counter')
+
 # class documentation
 class Train
-  attr_reader :number, :speed, :railcars
+  include Brand
+  attr_reader :number, :speed, :railcars, :type
 
   def initialize(number)
     @number = number
     @railcars = []
 
     @speed = 0
+
+    @@trains[number] = self
   end
 
   # interface method
@@ -51,6 +57,8 @@ class Train
     current_station.send(self)
     next_station.recieve(self)
     @station_number -= 1
+
+    @@trains << self
   end
 
   # interface method
@@ -66,5 +74,14 @@ class Train
   # interface method
   def previous_station
     @route.stations[@station_number - 1]
+  end
+
+  # class variables
+  @@trains = {}
+  # @@instance_counter = 0
+
+  # class methods
+  def self.find(number)
+    @@trains[number]
   end
 end
