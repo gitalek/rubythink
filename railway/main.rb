@@ -86,10 +86,16 @@ class Main
 
   def create_train
     puts 'CREATING THE TRAIN...'
-    number = input('Enter number of train: ').to_i
     type = input('Enter type of train: ')
 
-    train = train_class_from_type[type].new(number)
+    begin
+      number = input('Enter number of train: ')
+      train = train_class_from_type[type].new(number)
+    rescue RuntimeError => e
+      puts e.message
+      retry
+    end
+
     trains[number] = train
 
     puts "OK: train has been created: #{train}"

@@ -6,13 +6,22 @@ class Train
   include Brand
   attr_reader :number, :speed, :railcars, :type
 
+  NUMBER_FORMAT = /^\w{3}-?\w{2}$/i
+
   def initialize(number)
     @number = number
+    validate!
     @railcars = []
 
     @speed = 0
 
     @@trains[number] = self
+  end
+
+  def valid?
+    validate!
+  rescue RuntimeError
+    false
   end
 
   # interface method
@@ -83,5 +92,12 @@ class Train
   # class methods
   def self.find(number)
     @@trains[number]
+  end
+
+  protected
+
+  def validate!
+    raise 'Wrong number format' if number !~ NUMBER_FORMAT
+    true
   end
 end

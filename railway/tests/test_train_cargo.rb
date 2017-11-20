@@ -4,7 +4,7 @@ require_relative '../train/cargo_train'
 # class documentation
 class TestCargoTrain < Minitest::Test
   def setup
-    number = 1
+    number = 'aaa-11'
     @train = CargoTrain.new(number)
 
     assert_equal(number, @train.number)
@@ -39,6 +39,7 @@ class TestCargoTrain < Minitest::Test
   end
 
   def test_self_find_method
-    assert_equal(@train, Train.find(1))
+    number = 'aaa-11'
+    assert_equal(@train, Train.find(number))
   end
 end

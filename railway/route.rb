@@ -4,6 +4,7 @@ class Route
   attr_reader :stations
 
   def initialize(start_station, end_station)
+    validate! start_station, end_station
     @stations = [start_station, end_station]
   end
 
@@ -15,5 +16,15 @@ class Route
   # interface method
   def remove_transitional_station(station)
     @stations.delete(station)
+  end
+
+  protected
+
+  def validate!(start_station, end_station)
+    raise 'First argument must be instant of Station class!' unless start_station.instance_of? Station
+
+    raise 'Second argument must be instant of Station class!' unless end_station.instance_of? Station
+
+    true
   end
 end

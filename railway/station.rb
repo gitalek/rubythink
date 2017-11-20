@@ -2,11 +2,20 @@ class Station
   # interface method
   attr_reader :trains, :name
 
+  NAME_FORMAT = /\w{3,}/
+
   def initialize(name)
     @name = name
+    validate!
     @trains = []
 
     @@stations << self
+  end
+
+  def valid?
+    validate!
+  rescue RuntimeError
+    false
   end
 
   # interface method
@@ -31,5 +40,12 @@ class Station
   # class methods
   def self.all
     @@stations
+  end
+
+  protected
+
+  def validate!
+    raise 'Wrong name format' if name !~ NAME_FORMAT
+    true
   end
 end

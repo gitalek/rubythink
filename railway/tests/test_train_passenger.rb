@@ -4,7 +4,7 @@ require_relative '../train/passenger_train'
 # class documentation
 class TestPassengerTrain < Minitest::Test
   def setup
-    number = 1
+    number = 'bbb22'
     @train = PassengerTrain.new(number)
 
     assert_equal(number, @train.number)
