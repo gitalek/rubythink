@@ -18,6 +18,10 @@ class Station
     false
   end
 
+  def each(&block)
+    @@trains.each block
+  end
+
   # interface method
   def recieve(train)
     @trains << train

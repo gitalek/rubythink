@@ -7,7 +7,7 @@ require_relative 'railcar/passenger_railcar'
 
 # class documentation
 class Main
-  attr_reader :stations, :trains, :routes, :train_class_from_type
+  attr_reader :stations, :trains, :routes, :train_class_from_type, :input_message
 
   def initialize
     @stations = {}
@@ -18,10 +18,13 @@ class Main
       'cargo' => CargoTrain,
       'passenger' => PassengerTrain
     }
-  end
 
-  def show_menu
-    input_message = <<-HEREDOC
+    @create_railcar_from_type = {
+      'cargo' => create_cargo_railcar,
+      'passenger' => create_passenger_railcar
+    }
+
+    @input_message = <<-HEREDOC
 
     Menu:
 
@@ -30,22 +33,24 @@ class Main
     1 - create station  10 - show list of created stations
     -------------------------------------------------------
     2 - create train    20 - show list of created trains
-                        21 - show list of trains on station
-                        22 - set route to train
-                        23 - attach railcar to train
-                        24 - detach railcar from train
-                        25 - move train backward
-                        26 - move train forward
+    21 - show list of trains on station
+    22 - set route to train
+    23 - attach railcar to train
+    24 - detach railcar from train
+    25 - move train backward
+    26 - move train forward
     -------------------------------------------------------
     3 - create route    30 - show list of created routes
-                        31 - show list of stations in route
-                        32 - add station to route
-                        33 - remove station from route
+    31 - show list of stations in route
+    32 - add station to route
+    33 - remove station from route
     -------------------------------------------------------
     9 - exit
 
     HEREDOC
+  end
 
+  def show_menu
     puts input_message
   end
 
@@ -60,8 +65,13 @@ class Main
   end
 
   def get_train(request = 'Enter number of train: ')
-    train_number = input(request).to_i
+    train_number = input(request)
     trains[train_number]
+  end
+
+  def get_railcar
+    train = get_train
+    show_railcars_of_train
   end
 
   def get_route(request = 'Enter name of route: ')
@@ -86,10 +96,10 @@ class Main
 
   def create_train
     puts 'CREATING THE TRAIN...'
-    type = input('Enter type of train: ')
+    type = input('Enter a type of the train: ')
 
     begin
-      number = input('Enter number of train: ')
+      number = input('Enter a number of the train: ')
       train = train_class_from_type[type].new(number)
     rescue RuntimeError => e
       puts e.message
@@ -112,9 +122,46 @@ class Main
     end
   end
 
+  # new (changed)
   def show_trains_on_station
     puts '--- Trains on station ---'
-    get_station.trains.each { |train| puts train.number }
+    block = proc do |train|
+      puts "Number - #{train.number}, type - #{train.type}, amount of railcars: #{train.railcars.count}"
+    end
+    get_station.trains.each block
+  end
+
+  # new
+  def create_passenger_railcar
+    puts 'CREATING PASSENGER RAILCAR...'
+    seats = input('Enter seating capacity of the railcar: ')
+
+    PassengerRailcar.new(seats)
+  end
+
+  # new
+  def create_cargo_railcar
+    puts 'CREATING CARGO RAILCAR...'
+    volume = input('Enter total volume of the railcar: ')
+
+    CargoRailcar.new(volume)
+  end
+
+  # new
+  def show_railcars_of_train
+    puts 'CHOOSE TRAIN...'
+    train = get_train
+
+    passenger_block = proc do |railcar|
+      puts "Type - #{railcar.type}, free seats - #{railcar.free_seats}, takken seats - #{railcar.takken_seats}"
+    end
+
+    cargo_block = proc do |railcar|
+      puts "Type - #{railcar.type}, free volume - #{railcar.free_volume}, takken volume - #{railcar.takken_volume}"
+    end
+
+    block = train.type == 'Passenger' ? passenger_block : cargo_block
+    train.each block
   end
 
   def create_route
@@ -164,10 +211,12 @@ class Main
   end
 
   def attach_railcar
-    puts 'ATTACHING RAILCAR TO TRAIN...'
+    puts 'CHOOSE TRAIN...'
     train = get_train
-    railcar = train.type == 'cargo' ? PassengerRailcar.new : CargoRailcar.new
+    railcar = create_railcar_from_type[train.type]
+    puts 'ATTACHING RAILCAR TO TRAIN...'
     train.attach_railcar(railcar)
+    puts 'OK: THE RAILCAR WAS ATTACHED TO THE TRAIN'
   end
 
   def detach_railcar

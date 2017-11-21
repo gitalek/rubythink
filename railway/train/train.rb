@@ -18,10 +18,16 @@ class Train
     @@trains[number] = self
   end
 
+  # interface method
   def valid?
     validate!
   rescue RuntimeError
     false
+  end
+
+  # interface method
+  def each(&block)
+    @railcars.each block
   end
 
   # interface method
