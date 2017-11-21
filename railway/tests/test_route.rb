@@ -1,8 +1,6 @@
 require 'minitest/autorun'
 require_relative '../route'
 require_relative '../station'
-# require_relative '../train/cargo_train'
-# require_relative '../train/passenger_train'
 
 # class documentation
 class TestStation < Minitest::Test

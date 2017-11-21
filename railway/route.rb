@@ -4,8 +4,8 @@ class Route
   attr_reader :stations
 
   def initialize(start_station, end_station)
-    validate! start_station, end_station
     @stations = [start_station, end_station]
+    validate!
   end
 
   # interface method
@@ -20,10 +20,10 @@ class Route
 
   protected
 
-  def validate!(start_station, end_station)
-    raise 'First argument must be instant of Station class!' unless start_station.instance_of? Station
+  def validate!
+    raise 'First argument must be instant of Station class!' unless stations.first.instance_of? Station
 
-    raise 'Second argument must be instant of Station class!' unless end_station.instance_of? Station
+    raise 'Second argument must be instant of Station class!' unless stations.last.instance_of? Station
 
     true
   end
