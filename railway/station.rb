@@ -1,8 +1,9 @@
+# class documentation
 class Station
   # interface method
   attr_reader :trains, :name
 
-  NAME_FORMAT = /\w{3,}/
+  NAME_FORMAT = /^\w{3,}$/
 
   def initialize(name)
     @name = name
@@ -18,8 +19,8 @@ class Station
     false
   end
 
-  def each(&block)
-    @@trains.each block
+  def each_train(block)
+    @trains.each(&block)
   end
 
   # interface method

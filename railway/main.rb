@@ -20,9 +20,27 @@ class Main
     }
 
     @create_railcar_from_type = {
-      'cargo' => create_cargo_railcar,
-      'passenger' => create_passenger_railcar
+      'cargo' => method(:create_cargo_railcar),
+      'passenger' => method(:create_passenger_railcar)
     }
+
+    @fill_the_railcar_from_type = {
+      'cargorailcar' => method(:fill_cargo_railcar),
+      'passengerrailcar' => method(:fill_passenger_railcar)
+    }
+
+    @process_railcar_block = {
+      'cargo' => proc do |railcar|
+        puts "No. #{railcar.number}, type - #{railcar.type}, free volume - #{railcar.free_volume}, takken volume - #{railcar.takken_volume}"
+      end,
+      'passenger' => proc do |railcar|
+        puts "No. #{railcar.number}, type - #{railcar.type}, free seats - #{railcar.free_seats}, takken seats - #{railcar.takken_seats}"
+      end
+    }
+
+    @show_trains_on_station_block = proc do |train|
+      puts "No. #{train.number}, type - #{train.type}, amount of railcars: #{train.railcars.count}"
+    end
 
     @input_message = <<-HEREDOC
 
@@ -31,21 +49,25 @@ class Main
     0 - show this menu
     -------------------------------------------------------
     1 - create station  10 - show list of created stations
+                        11 - show trains on station
+                        12 - show stations and trains
     -------------------------------------------------------
     2 - create train    20 - show list of created trains
-    21 - show list of trains on station
-    22 - set route to train
-    23 - attach railcar to train
-    24 - detach railcar from train
-    25 - move train backward
-    26 - move train forward
+                        21 - show list of trains on station
+                        22 - set route to train
+                        23 - attach railcar to train
+                        24 - detach railcar from train
+                        25 - show railcars of train
+                        26 - fill the railcar
+                        27 - move train backward
+                        28 - move train forward
     -------------------------------------------------------
     3 - create route    30 - show list of created routes
-    31 - show list of stations in route
-    32 - add station to route
-    33 - remove station from route
+                        31 - show list of stations in route
+                        32 - add station to route
+                        33 - remove station from route
     -------------------------------------------------------
-    9 - exit
+    9  - exit
 
     HEREDOC
   end
@@ -54,34 +76,67 @@ class Main
     puts input_message
   end
 
-  def input(request)
+  def random_input(request)
     print request
     gets.chomp
   end
 
+  def float_input(request)
+    format = /^[1-9]\d*(\.\d*)?$/
+
+    begin
+      print request
+      response = gets.chomp
+      raise 'Input number, please' unless format =~ response
+    rescue RuntimeError => e
+      puts e.message
+      retry
+    end
+
+    response.to_f
+  end
+
+  def integer_input(request)
+    format = /^[1-9]\d*$/
+
+    begin
+      print request
+      response = gets.chomp
+      raise 'Input integer, please' unless format =~ response
+    rescue RuntimeError => e
+      puts e.message
+      retry
+    end
+
+    response.to_i
+  end
+
   def get_station(request = 'Enter name of station: ')
-    station = input(request)
+    station = random_input(request)
     stations[station]
   end
 
-  def get_train(request = 'Enter number of train: ')
-    train_number = input(request)
+  def get_train(request = "CHOOSE TRAIN...\nEnter number of train: ")
+    train_number = random_input(request)
     trains[train_number]
   end
 
-  def get_railcar
-    train = get_train
-    show_railcars_of_train
+  def get_route(request = 'Enter name of route: ')
+    route = random_input(request)
+    routes[route]
   end
 
-  def get_route(request = 'Enter name of route: ')
-    route = input(request)
-    routes[route]
+  def get_railcar(train)
+    puts 'CHOOSE RAILCAR NUMBER'
+    show_railcars_of_train(train)
+    railcar_number = integer_input('Enter number of chosen railcar: ')
+
+    train.get_railcar_by_number(railcar_number.to_i)
   end
 
   def create_station
     puts 'CREATING THE STATION...'
-    name = input('Enter name of station: ')
+    name = random_input('Enter name of station: ')
 
     station = Station.new(name)
     stations[name] = station
@@ -96,10 +151,10 @@ class Main
 
   def create_train
     puts 'CREATING THE TRAIN...'
-    type = input('Enter a type of the train: ')
+    type = random_input('Enter type of the train: ')
 
     begin
-      number = input('Enter a number of the train: ')
+      number = random_input('Enter number of the train: ')
       train = train_class_from_type[type].new(number)
     rescue RuntimeError => e
       puts e.message
@@ -111,62 +166,55 @@ class Main
     puts "OK: train has been created: #{train}"
     trains.each_value do |train|
       new_label = train.number == number ? ' *--NEW--' : ''
-      puts "train: number - #{train.number}, type - #{train.type}#{new_label}"
+      puts "train: No. #{train.number}, type - #{train.type}#{new_label}"
     end
   end
 
   def show_trains
     puts '--- Created trains ---'
     trains.each_value do |train|
-      puts "train: number - #{train.number}, type - #{train.type}"
+      puts "train: No. #{train.number}, type - #{train.type}"
     end
   end
 
-  # new (changed)
   def show_trains_on_station
     puts '--- Trains on station ---'
-    block = proc do |train|
-      puts "Number - #{train.number}, type - #{train.type}, amount of railcars: #{train.railcars.count}"
-    end
-    get_station.trains.each block
+    get_station.trains.each(&show_trains_on_station_block)
   end
 
-  # new
+  def show_trains_on_stations
+    station.all do |station|
+      puts "Station #{station.name}"
+      station.trains.each(&show_trains_on_station_block)
+      puts '-------------------------------'
+    end
+  end
+
   def create_passenger_railcar
     puts 'CREATING PASSENGER RAILCAR...'
-    seats = input('Enter seating capacity of the railcar: ')
-
-    PassengerRailcar.new(seats)
+    seats = integer_input('Enter seating capacity of the railcar: ')
+    PassengerRailcar.new(seats.to_i)
   end
 
-  # new
   def create_cargo_railcar
     puts 'CREATING CARGO RAILCAR...'
-    volume = input('Enter total volume of the railcar: ')
-
-    CargoRailcar.new(volume)
+    volume = float_input('Enter total volume of the railcar: ')
+    CargoRailcar.new(volume.to_f)
   end
 
-  # new
-  def show_railcars_of_train
-    puts 'CHOOSE TRAIN...'
+  def show_railcars_of_train(train)
+    block = @process_railcar_block[train.type]
+    train.each_railcar(block)
+  end
+
+  def show_railcars
     train = get_train
-
-    passenger_block = proc do |railcar|
-      puts "Type - #{railcar.type}, free seats - #{railcar.free_seats}, takken seats - #{railcar.takken_seats}"
-    end
-
-    cargo_block = proc do |railcar|
-      puts "Type - #{railcar.type}, free volume - #{railcar.free_volume}, takken volume - #{railcar.takken_volume}"
-    end
-
-    block = train.type == 'Passenger' ? passenger_block : cargo_block
-    train.each block
+    show_railcars_of_train(train)
   end
 
   def create_route
     puts 'CREATING THE ROUTE...'
-    name = input('Enter name of route: ')
+    name = random_input('Enter name of route: ')
     start_station = get_station('Enter name of start station: ')
     end_station = get_station('Enter name of end station: ')
 
@@ -211,19 +259,33 @@ class Main
   end
 
   def attach_railcar
-    puts 'CHOOSE TRAIN...'
     train = get_train
-    railcar = create_railcar_from_type[train.type]
+    railcar = @create_railcar_from_type[train.type].call
     puts 'ATTACHING RAILCAR TO TRAIN...'
     train.attach_railcar(railcar)
     puts 'OK: THE RAILCAR WAS ATTACHED TO THE TRAIN'
   end
 
   def detach_railcar
-    puts 'DETACHING RAILCAR FROM TRAIN...'
     train = get_train
-    railcar = train.type == 'cargo' ? PassengerRailcar.new : CargoRailcar.new
+    railcar = get_railcar(train)
+    puts 'DETACHING RAILCAR FROM TRAIN...'
     train.detach_railcar(railcar)
+  end
+
+  def fill_cargo_railcar(railcar)
+    volume = float_input('Enter volume: ')
+    railcar.take_a_volume(volume)
+  end
+
+  def fill_passenger_railcar(railcar)
+    railcar.take_a_seat
+  end
+
+  def fill_the_railcar
+    train = get_train
+    railcar = get_railcar(train)
+    @fill_the_railcar_from_type[railcar.class.to_s.downcase].call(railcar)
   end
 
   def move_bacward
@@ -254,6 +316,10 @@ class Main
         create_route
       when 10
         show_stations
+      when 11
+        show_trains_on_station
+      when 12
+        show_trains_on_stations
       when 20
         show_trains
       when 21
@@ -265,8 +331,12 @@ class Main
       when 24
         detach_railcar
       when 25
-        move_bacward
+        show_railcars
       when 26
+        fill_the_railcar
+      when 27
+        move_bacward
+      when 28
         move_forward
       when 30
         show_routes

@@ -11,7 +11,7 @@ class Train
   def initialize(number)
     @number = number
     validate!
-    @railcars = []
+    @railcars = {}
 
     @speed = 0
 
@@ -26,8 +26,8 @@ class Train
   end
 
   # interface method
-  def each(&block)
-    @railcars.each block
+  def each_railcar(block)
+    @railcars.each_value(&block)
   end
 
   # interface method
@@ -42,12 +42,16 @@ class Train
 
   # interface method
   def attach_railcar(railcar)
-    @railcars << railcar if @type == railcar.type && @speed.zero?
+    @railcars[railcar.number] = railcar if @type == railcar.type && @speed.zero?
+  end
+
+  def get_railcar_by_number(number)
+    @railcars[number]
   end
 
   # interface method
   def detach_railcar(railcar)
-    @railcars.delete(railcar) if @speed.zero? && !@railcars.zero?
+    @railcars.delete(railcar.number) if @speed.zero? && !@railcars.empty?
   end
 
   # interface method
@@ -73,6 +77,7 @@ class Train
     next_station.recieve(self)
     @station_number -= 1
 
+    # проверить
     @@trains << self
   end
 
