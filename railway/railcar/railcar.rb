@@ -2,15 +2,19 @@ require_relative('../modules/brand')
 
 # class documentation
 class Railcar
+  class << self
+    attr_accessor :instance_counter
+  end
+
   include Brand
 
   attr_reader :type, :number
 
   def initialize
-    @@instance_counter += 1
-    @number = @@instance_counter
+    self.class.superclass.instance_counter += 1
+    @number = self.class.superclass.instance_counter
   end
 
   # class variables
-  @@instance_counter = 0
+  @instance_counter = 0
 end

@@ -30,14 +30,13 @@ class TestStation < Minitest::Test
       name = 'kz'
       Station.new(name)
     end
-
-    assert_equal('Wrong name format', exception.message)
+    assert_equal('kz - wrong name format', exception.message)
 
     station = Station.new('eee-ee')
     assert(station.valid?)
   end
 
-  # update this test if previous tests were changed or added
+  # update this test when previous tests were changed or added
   # def test_self_all_method
   #   assert_equal(1, Station.all.length)
   #   assert_includes(Station.all, @station)

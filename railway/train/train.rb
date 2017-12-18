@@ -3,6 +3,18 @@ require_relative('../modules/instance_counter')
 
 # class documentation
 class Train
+  class << self
+    attr_accessor :trains
+  end
+
+  # class-level instance variables
+  @trains = {}
+
+  # class methods
+  def self.find(number)
+    trains[number]
+  end
+
   include Brand
   attr_reader :number, :speed, :railcars, :type
 
@@ -15,7 +27,7 @@ class Train
 
     @speed = 0
 
-    @@trains[number] = self
+    self.class.superclass.trains[number] = self
   end
 
   # interface method
@@ -77,8 +89,8 @@ class Train
     next_station.recieve(self)
     @station_number -= 1
 
-    # проверить
-    @@trains << self
+    # to check
+    self.class.trains << self
   end
 
   # interface method
@@ -94,15 +106,6 @@ class Train
   # interface method
   def previous_station
     @route.stations[@station_number - 1]
-  end
-
-  # class variables
-  @@trains = {}
-  # @@instance_counter = 0
-
-  # class methods
-  def self.find(number)
-    @@trains[number]
   end
 
   protected

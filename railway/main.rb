@@ -7,17 +7,71 @@ require_relative 'railcar/passenger_railcar'
 
 # class documentation
 class Main
-  attr_reader :stations, :trains, :routes, :train_class_from_type, :input_message
+  class << self
+    attr_reader :train_class_from_type, :process_railcar_block, :show_trains_on_station_block, :input_message, :cases
+  end
+
+  # class level instance variables
+  @train_class_from_type = {
+    'cargo' => CargoTrain,
+    'passenger' => PassengerTrain
+  }
+
+  @process_railcar_block = {
+    'cargo' => proc do |railcar|
+      puts "No. #{railcar.number}, type - #{railcar.type}, free volume - #{railcar.free_volume}, takken volume - #{railcar.takken_volume}"
+    end,
+    'passenger' => proc do |railcar|
+      puts "No. #{railcar.number}, type - #{railcar.type}, free seats - #{railcar.free_seats}, takken seats - #{railcar.takken_seats}"
+    end
+  }
+
+  @show_trains_on_station_block = proc do |train|
+    puts "No. #{train.number}, type - #{train.type}, amount of railcars: #{train.railcars.count}"
+  end
+
+  @input_message = <<-HEREDOC
+
+  Menu:
+
+  0 - show this menu
+  -------------------------------------------------------
+  1 - create station  10 - show list of created stations
+                      11 - show trains on station
+                      12 - show stations and trains
+  -------------------------------------------------------
+  2 - create train    20 - show list of created trains
+                      21 - set route to train
+                      22 - attach railcar to train
+                      23 - detach railcar from train
+                      24 - show railcars of train
+                      25 - fill the railcar
+                      26 - move train backward
+                      27 - move train forward
+  -------------------------------------------------------
+  3 - create route    30 - show list of created routes
+                      31 - show list of stations in route
+                      32 - add station to route
+                      33 - remove station from route
+  -------------------------------------------------------
+  9  - exit
+
+  HEREDOC
+
+  @cases = {
+    0 => :show_menu, 1 => :create_station, 2 => :create_train, 3 => :create_route,
+    10 => :show_stations, 11 => :show_trains_on_station, 12 => :show_trains_on_stations,
+    20 => :show_trains, 21 => :set_route, 22 => :attach_railcar, 23 => :detach_railcar,
+    24 => :show_railcars, 25 => :fill_the_railcar, 26 => :move_bacward, 27 => :move_forward,
+    30 => :show_routes, 31 => :show_route_stations, 32 => :add_station, 33 => :remove_station
+  }
+
+  attr_reader :stations, :trains, :routes
 
   def initialize
     @stations = {}
     @trains = {}
     @routes = {}
-
-    @train_class_from_type = {
-      'cargo' => CargoTrain,
-      'passenger' => PassengerTrain
-    }
 
     @create_railcar_from_type = {
       'cargo' => method(:create_cargo_railcar),
@@ -28,52 +82,10 @@ class Main
       'cargorailcar' => method(:fill_cargo_railcar),
       'passengerrailcar' => method(:fill_passenger_railcar)
     }
-
-    @process_railcar_block = {
-      'cargo' => proc do |railcar|
-        puts "No. #{railcar.number}, type - #{railcar.type}, free volume - #{railcar.free_volume}, takken volume - #{railcar.takken_volume}"
-      end,
-      'passenger' => proc do |railcar|
-        puts "No. #{railcar.number}, type - #{railcar.type}, free seats - #{railcar.free_seats}, takken seats - #{railcar.takken_seats}"
-      end
-    }
-
-    @show_trains_on_station_block = proc do |train|
-      puts "No. #{train.number}, type - #{train.type}, amount of railcars: #{train.railcars.count}"
-    end
-
-    @input_message = <<-HEREDOC
-
-    Menu:
-
-    0 - show this menu
-    -------------------------------------------------------
-    1 - create station  10 - show list of created stations
-                        11 - show trains on station
-                        12 - show stations and trains
-    -------------------------------------------------------
-    2 - create train    20 - show list of created trains
-                        21 - show list of trains on station
-                        22 - set route to train
-                        23 - attach railcar to train
-                        24 - detach railcar from train
-                        25 - show railcars of train
-                        26 - fill the railcar
-                        27 - move train backward
-                        28 - move train forward
-    -------------------------------------------------------
-    3 - create route    30 - show list of created routes
-                        31 - show list of stations in route
-                        32 - add station to route
-                        33 - remove station from route
-    -------------------------------------------------------
-    9  - exit
-
-    HEREDOC
   end
 
   def show_menu
-    puts input_message
+    puts self.class.input_message
   end
 
   def random_input(request)
@@ -155,37 +167,40 @@ class Main
 
     begin
       number = random_input('Enter number of the train: ')
-      train = train_class_from_type[type].new(number)
+      train = self.class.train_class_from_type[type].new(number)
     rescue RuntimeError => e
       puts e.message
       retry
     end
 
     trains[number] = train
+    show_creating_train_result(train)
+  end
 
+  def show_creating_train_result(train)
     puts "OK: train has been created: #{train}"
-    trains.each_value do |train|
-      new_label = train.number == number ? ' *--NEW--' : ''
-      puts "train: No. #{train.number}, type - #{train.type}#{new_label}"
+    trains.each_value do |t|
+      new_label = t == train ? ' *--NEW--' : ''
+      puts "train: No. #{t.number}, type - #{t.type}#{new_label}"
     end
   end
 
   def show_trains
     puts '--- Created trains ---'
-    trains.each_value do |train|
-      puts "train: No. #{train.number}, type - #{train.type}"
+    trains.each_value do |t|
+      puts "train: No. #{t.number}, type - #{t.type}"
     end
   end
 
   def show_trains_on_station
     puts '--- Trains on station ---'
-    get_station.trains.each(&show_trains_on_station_block)
+    get_station.trains.each(&self.class.show_trains_on_station_block)
   end
 
   def show_trains_on_stations
     station.all do |station|
       puts "Station #{station.name}"
-      station.trains.each(&show_trains_on_station_block)
+      station.trains.each(&self.class.show_trains_on_station_block)
       puts '-------------------------------'
     end
   end
@@ -203,7 +218,7 @@ class Main
   end
 
   def show_railcars_of_train(train)
-    block = @process_railcar_block[train.type]
+    block = self.class.process_railcar_block[train.type]
     train.each_railcar(block)
   end
 
@@ -305,47 +320,9 @@ class Main
 
       break if user_request == 9
 
-      case user_request
-      when 0
-        show_menu
-      when 1
-        create_station
-      when 2
-        create_train
-      when 3
-        create_route
-      when 10
-        show_stations
-      when 11
-        show_trains_on_station
-      when 12
-        show_trains_on_stations
-      when 20
-        show_trains
-      when 21
-        show_trains_on_station
-      when 22
-        set_route
-      when 23
-        attach_railcar
-      when 24
-        detach_railcar
-      when 25
-        show_railcars
-      when 26
-        fill_the_railcar
-      when 27
-        move_bacward
-      when 28
-        move_forward
-      when 30
-        show_routes
-      when 31
-        show_route_stations
-      when 32
-        add_station
-      when 33
-        remove_station
+      res = self.class.cases[user_request]
+      if res
+        method(res).call
       else
         puts "'#{user_request}' is wrong command. Choose action from menu"
       end

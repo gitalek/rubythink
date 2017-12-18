@@ -1,0 +1,9 @@
+AllCops:
+  Exclude:
+    - './tests/**/*'
+    - './bin'
+    - './foo.rb'
+    - './Makefile'
+
+Metrics/LineLength:
+  Max: 500

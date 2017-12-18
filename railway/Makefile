@@ -17,3 +17,8 @@ test_station:
 
 test_module_instance_counter:
 	ruby tests/test_module_instance_counter.rb
+
+test_complex: test_station test_trains test_railcars test_route test_module_instance_counter
+
+rubocop:
+	rubocop -D -c './.rubocop.yml'

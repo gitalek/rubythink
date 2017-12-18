@@ -1,16 +1,20 @@
 # class documentation
 class Station
+  class << self
+    attr_reader :stations
+  end
+
   # interface method
   attr_reader :trains, :name
 
-  NAME_FORMAT = /^\w{3,}$/
+  NAME_FORMAT = /^.{3,}$/
 
   def initialize(name)
     @name = name
     validate!
     @trains = []
 
-    @@stations << self
+    self.class.stations << self
   end
 
   def valid?
@@ -36,21 +40,21 @@ class Station
   # interface method
   def typed_train_list(type)
     amount = 0
-    @trains.reduce(amount) { |acc, train| train.type == type ? acc += 1 : acc }
+    @trains.reduce(amount) { |acc, train| train.type == type ? acc + 1 : acc }
   end
 
   # class varibles
-  @@stations = []
+  @stations = []
 
   # class methods
   def self.all
-    @@stations
+    @stations
   end
 
   protected
 
   def validate!
-    raise 'Wrong name format' if name !~ NAME_FORMAT
+    raise "#{name} - wrong name format" if name !~ NAME_FORMAT
     true
   end
 end
