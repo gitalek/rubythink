@@ -1,8 +1,14 @@
+require_relative('../modules/accessors')
+require_relative('../modules/validation')
+
 # class documentation
 class Station
   class << self
     attr_reader :stations
   end
+
+  include Accessors
+  include Validation
 
   # interface method
   attr_reader :trains, :name
@@ -15,12 +21,6 @@ class Station
     @trains = []
 
     self.class.stations << self
-  end
-
-  def valid?
-    validate!
-  rescue RuntimeError
-    false
   end
 
   def each_train(block)
@@ -49,12 +49,5 @@ class Station
   # class methods
   def self.all
     @stations
-  end
-
-  protected
-
-  def validate!
-    raise "#{name} - wrong name format" if name !~ NAME_FORMAT
-    true
   end
 end

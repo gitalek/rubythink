@@ -1,3 +1,5 @@
+require_relative('../modules/accessors')
+require_relative('../modules/validation')
 require_relative('../modules/brand')
 require_relative('../modules/instance_counter')
 
@@ -15,6 +17,8 @@ class Train
     trains[number]
   end
 
+  include Accessors
+  include Validation
   include Brand
   attr_reader :number, :speed, :railcars, :type
 
@@ -28,13 +32,6 @@ class Train
     @speed = 0
 
     self.class.superclass.trains[number] = self
-  end
-
-  # interface method
-  def valid?
-    validate!
-  rescue RuntimeError
-    false
   end
 
   # interface method
@@ -106,12 +103,5 @@ class Train
   # interface method
   def previous_station
     @route.stations[@station_number - 1]
-  end
-
-  protected
-
-  def validate!
-    raise 'Wrong number format' if number !~ NUMBER_FORMAT
-    true
   end
 end

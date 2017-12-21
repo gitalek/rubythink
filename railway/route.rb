@@ -1,5 +1,11 @@
+require_relative('../modules/accessors')
+require_relative('../modules/validation')
+
 # class documentation
 class Route
+  include Accessors
+  include Validation
+
   # interface method
   attr_reader :stations
 
@@ -16,15 +22,5 @@ class Route
   # interface method
   def remove_transitional_station(station)
     @stations.delete(station)
-  end
-
-  protected
-
-  def validate!
-    raise 'First argument must be instant of Station class!' unless stations.first.instance_of? Station
-
-    raise 'Second argument must be instant of Station class!' unless stations.last.instance_of? Station
-
-    true
   end
 end
