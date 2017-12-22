@@ -1,7 +1,7 @@
 # module documentation
 module Accessors
-  def symbol_validate!(value)
-    raise 'Symbol is needed' unless value.is_a? Symbol
+  def attr_name_type_validate!(value)
+    raise 'Symbol or String is needed' unless value.is_a?(Symbol) || value.is_a?(String)
   end
 
   def define_setter(attribute, attribute_name)
@@ -23,7 +23,7 @@ module Accessors
 
   def attr_accessor_with_history(*attributes)
     attributes.each do |attribute|
-      symbol_validate!(attribute)
+      attr_name_type_validate!(attribute)
 
       attribute_name = "@#{attribute}".to_sym
       attribute_history_name = "@#{attribute}_history"
